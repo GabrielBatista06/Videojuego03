@@ -2,24 +2,34 @@ import pygame, random, time
 
 tiempo=pygame.time.get_ticks()/1000
 
+#Global values
 WIDTH = 800
 HEIGHT = 600
 BLACK = (0, 0, 0)
 WHITE = ( 255, 255, 255)
 GREEN = (0, 255, 0)
-SCORE=(241, 244, 59)
+SCORE = (241, 244, 59)
+Counter = 0
+
+#Script start
 
 pygame.init()
+
 pygame.mixer.init()
+
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
+
 pygame.display.set_caption("ALIENS VS BALLOONS")
+
 clock = pygame.time.Clock()
+
 def draw_text(surface, text, size, x, y):
  font = pygame.font.SysFont("arial", size)
  text_surface = font.render(text, True, SCORE)
  text_rect = text_surface.get_rect()
  text_rect.midtop = (x, y)
  surface.blit(text_surface, text_rect)
+
  #_________Grupo de BALLOONS___________#
 def grupo():
  balloons = BALLOONS()
@@ -34,16 +44,18 @@ def draw_shield_bar(surface, x, y, percentage):
  fill = pygame.Rect(x, y, fill, BAR_HEIGHT)
  pygame.draw.rect(surface, SCORE, fill)
  pygame.draw.rect(surface, WHITE, border, 2)
+
 class Player(pygame.sprite.Sprite):
  def __init__(self):
   super().__init__()
-  self.image = pygame.image.load("assets/NAVE.png").convert()
+  self.image = pygame.image.load("./assets/NAVE.png").convert()
   self.image.set_colorkey(BLACK)
   self.rect = self.image.get_rect()
   self.rect.centerx = WIDTH - 50
   self.rect.bottom = HEIGHT - 500
   self.speed_y = 0
   self.shield = 100
+
  def update(self):
   self.speed_y = 0
   keystate = pygame.key.get_pressed()
@@ -62,6 +74,7 @@ class Player(pygame.sprite.Sprite):
   all_sprites.add(bullet)
   bullets.add(bullet)
   laser_sound.play()
+
 class BALLOONS(pygame.sprite.Sprite):
  def __init__(self):
   super().__init__()
@@ -78,19 +91,22 @@ class BALLOONS(pygame.sprite.Sprite):
    self.rect.x = random.randrange(660)
    self.rect.y = random.randrange(-600,0)
    self.speedy = random.randrange(1, 10)
+
 class Bullet(pygame.sprite.Sprite):
  def __init__(self, x, y):
   super().__init__()
-  self.image = pygame.image.load("assets/LASER.png")
+  self.image = pygame.image.load("./assets/LASER.png")
   self.image.set_colorkey(BLACK)
   self.rect = self.image.get_rect()
   self.rect.x = x-50
   self.rect.centery = y+55
   self.speedy = -10
+
  def update(self):
   self.rect.x += self.speedy
   if self.rect.bottom < 0:
    self.kill()
+
 class Explosion(pygame.sprite.Sprite):
  def __init__(self, center):
   super().__init__()
@@ -100,6 +116,7 @@ class Explosion(pygame.sprite.Sprite):
   self.frame = 0
   self.last_update = pygame.time.get_ticks()
   self.frame_rate = 50 # VELOCIDAD DE LA EXPLOSION
+
  def update(self):
   now = pygame.time.get_ticks()
   if now - self.last_update > self.frame_rate:
@@ -112,11 +129,11 @@ class Explosion(pygame.sprite.Sprite):
     self.image = explosion_anim[self.frame]
     self.rect = self.image.get_rect()
     self.rect.center = center
+
 def show_go_screen():
  screen.blit(background1, [0,0])
-
- draw_text(screen, "Instruciones van aquí", 27, WIDTH // 2, HEIGHT // 2)
- draw_text(screen, "Press Key", 20, WIDTH // 2, HEIGHT * 3/4)
+ draw_text(screen, "↑ up and ↓ down to move / backspace to shoot", 27, WIDTH // 2, HEIGHT // 2)
+ draw_text(screen, "Press any Key", 20, WIDTH // 2, HEIGHT * 3/4)
  pygame.display.flip()
  waiting = True
  while waiting:
@@ -127,37 +144,41 @@ def show_go_screen():
    if event.type == pygame.KEYUP:
     waiting = False
 balloons_images = []
-balloons_list = ["assets/GLOBOC1.png", "assets/GLOBOB1.png","assets/GLOBOA1.png"]
+balloons_list = ["./assets/GLOBOC1.png", "./assets/GLOBOB1.png","./assets/GLOBOA1.png"]
 for img in balloons_list:
     balloons_images.append(pygame.image.load(img).convert())
 ####----------------EXPLOSTION IMAGENES --------------
 explosion_anim = []
 for i in range(3):
- file = "assets/regularExplosion0{}.png".format(i)
+ file = "./assets/regularExplosion0{}.png".format(i)
  img = pygame.image.load(file).convert()
  img.set_colorkey(BLACK)
  img_scale = pygame.transform.scale(img, (70,70))
  explosion_anim.append(img_scale)
 # Cargar imagen de fondo
-background = pygame.image.load("assets/FONDO.png").convert()
-background1 = pygame.image.load("assets/PATRÓN.png").convert()
+background = pygame.image.load("./assets/FONDO.png").convert()
+background1 = pygame.image.load("./assets/PATRON.png").convert()
 background1.set_colorkey(BLACK)
 # Cargar sonidos
-laser_sound = pygame.mixer.Sound("assets/laser5.ogg")
-explosion_sound = pygame.mixer.Sound("assets/Explosión.mp3")
-pygame.mixer.music.load("assets/music.ogg")
+laser_sound = pygame.mixer.Sound("./assets/laser5.ogg")
+#explosion_sound = pygame.mixer.Sound("./assets/Explosion.mp3")
+pygame.mixer.music.load("./assets/music.ogg")
 pygame.mixer.music.set_volume(0.1)
 pygame.mixer.music.play(loops=-1)
 #### ----------GAME OVER
 game_over = True
 running = True
 #----------BUCLE PRINCIPAL------------#
+Player.shield = 100
 while running:
 #----Implementacion del tiempo---------#
- tiempo=pygame.time.get_ticks()/1000
- if tiempo >=10:
-  player.shield -= 2
-  game_over=False
+ Counter += 1
+ if(Counter == 1500):
+   Player.shield -= 10
+   Counter = 0
+  
+ if Player.shield == 0:
+   game_over = True
 
  if game_over:  
   show_go_screen()
@@ -166,8 +187,8 @@ while running:
   all_sprites = pygame.sprite.Group()
   balloons_list = pygame.sprite.Group()
   bullets = pygame.sprite.Group()
-  player = Player()
-  all_sprites.add(player)
+  Player = Player()
+  all_sprites.add(Player)
   for i in range(8):
     grupo()
   score = 0
@@ -177,30 +198,31 @@ while running:
    running = False
   elif event.type == pygame.KEYDOWN:
    if event.key == pygame.K_SPACE:
-    player.shoot()
+    Player.shoot()
  all_sprites.update()
  #colisiones - balloons - laser
  hits = pygame.sprite.groupcollide(balloons_list, bullets, True, True)
  for hit in hits:
   score += 10
-  explosion_sound.play()
+  #explosion_sound.play()
   explosion = Explosion(hit.rect.center)
   all_sprites.add(explosion)
   grupo()
  # Checar colisiones - jugador - balloons
- hits = pygame.sprite.spritecollide(player, balloons_list, True)
+ hits = pygame.sprite.spritecollide(Player, balloons_list, True)
  for hit in hits:
-  player.shield -= 25
+  Player.shield -= 25
   grupo()
-  if player.shield <= 0:
+  if Player.shield <= 0:
    game_over = True
  screen.blit(background, [0, 0])
  all_sprites.draw(screen)
  #Marcador
  draw_text(screen, str(score), 25, WIDTH // 2, 10)
  # Escudo.
- draw_shield_bar(screen, 5, 5, player.shield)
+ draw_shield_bar(screen, 5, 5, Player.shield)
  pygame.display.flip()
+
 
 pygame.quit()
 
